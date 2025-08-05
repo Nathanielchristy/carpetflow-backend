@@ -41,9 +41,21 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(compression());
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://carpetflow-frontend.vercel.app',
+  'https://carpetflow-frontend-fln3ultng-nathaniels-projects-aea7cc59.vercel.app/',
+  // Add more preview URLs if needed, or allow all *.vercel.app (see below)
+];
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
