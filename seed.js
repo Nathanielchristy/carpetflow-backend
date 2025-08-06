@@ -120,8 +120,12 @@ const importData = async () => {
     await StockMovement.deleteMany();
 
     // Insert users
-    const usersToCreate = mockUsers.map(({ id, ...user }) => user);
-    const createdUsers = await User.insertMany(usersToCreate);
+    const createdUsers = [];
+    for (const user of mockUsers) {
+      const { id, ...userData } = user;
+      const createdUser = await User.create(userData);
+      createdUsers.push(createdUser);
+    }
 
     const adminUser = createdUsers.find((user) => user.role === 'admin');
     if (!adminUser) {
