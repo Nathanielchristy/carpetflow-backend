@@ -100,7 +100,6 @@ router.post(
     body('items').isArray({ min: 1 }),
     body('items.*.carpet').notEmpty(),
     body('items.*.quantity').isNumeric(),
-    body('items.*.unitPrice').isNumeric(),
   ],
   async (req, res) => {
     try {
@@ -132,11 +131,20 @@ router.post(
             error: `Carpet with id ${item.carpet} not found`,
           });
         }
+
+        if (status !== 'draft' && carpet.stockQuantity < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            error: `Not enough stock for ${carpet.name}. Available: ${carpet.stockQuantity}, requested: ${item.quantity}`,
+          });
+        }
+
+        item.unitPrice = carpet.unitPrice;
         item.total = item.quantity * item.unitPrice;
         subtotal += item.total;
       }
 
-      const total = subtotal; // Simplified for now
+      const total = subtotal;
 
       const invoiceNumber = `INV-${new Date().getFullYear()}-${String(await Invoice.countDocuments() + 1).padStart(3, '0')}`;
 
